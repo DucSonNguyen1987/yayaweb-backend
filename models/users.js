@@ -28,7 +28,7 @@ const subscriptionSchema = mongoose.Schema({
 
 const depositSchema = mongoose.Schema({
     credit: Number,
-    liverable: Boolean
+    deliverable: Boolean
 });
 
 const userSchema = mongoose.Schema({
