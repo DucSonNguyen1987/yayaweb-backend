@@ -43,23 +43,19 @@ router.post('/signup', function(req, res, next) {
         lastName,
         gender,
       };
-      const accesToken = generateAccessToken(userData);
+      const accessToken = generateAccessToken(userData);
       const refreshToken = generateRefreshToken({ email });
 
       // create new user doc
-      const newUser = new User({
-        email,
+      const newUser = new User({...userData, 
         password: hash,
-        firstName,
-        lastName,
-        gender,
-        accesToken,
+        accessToken,
         refreshToken
       });
 
       // save new user in db
       newUser.save().then(newDoc => {
-        res.json({ result: true, data: { email, firstName, lastName, gender, accesToken, refreshToken } });
+        res.json({ result: true, data: { email, firstName, lastName, gender, accessToken, refreshToken } });
       });
     } else {
       // User already exists in database
@@ -72,6 +68,7 @@ router.post('/signup', function(req, res, next) {
 /* POST users login */
 router.post('/login', async (req, res) => {
 
+  // check for parameters
   if (!checkBody(req.body, ['email', 'password'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
@@ -79,53 +76,64 @@ router.post('/login', async (req, res) => {
 
   const { email, password } = req.body;
 
-  User.findOne({ email }).then(async (data) => {
+  // check if user exists
+  const foundUser = await User.findOne({ email });
 
-    // if user is not found or password doesn't match, return error 401
-    if(!data || !(await bcrypt.compare(password, data.password))) {
-      return res.status(401).send('Error: Unauthorized');
-    }
-    const { firstName, lastName, gender } = data;
-    const accessToken = generateAccessToken({ email, firstName, lastName, gender });
-    const refreshToken = generateRefreshToken({ email });
+  // if user is not found or password doesn't match, return error 401
+  if(!foundUser || !(await bcrypt.compare(password, foundUser.password))) {
+    return res.status(401).send('Error: Unauthorized');
+  }
 
+  // generate tokens and update user in db
+  const { firstName, lastName, gender } = foundUser;
+  const accessToken = generateAccessToken({ email, firstName, lastName, gender });
+  const refreshToken = generateRefreshToken({ email });
+  foundUser.accessToken = accessToken;
+  foundUser.refreshToken = refreshToken;
+  const result = await foundUser.save();
+  // send response with user data
+  res.json({ result: true, data: { email, firstName, lastName, gender, accessToken, refreshToken } });
 
-    res.json({ result: true, data: { email, firstName, lastName, gender, accesToken, refreshToken } });
-
-  });
 });
 
 // POST users refreshToken : re-générer l'accessToken à partir du refreshToken
 router.post('/refreshToken', async (req, res) => {
 
+  // check for refresh token in header
   const authHeader = req.headers.authorization;
   const refreshToken = authHeader && authHeader.split(' ')[1];
 
+  // if no refresh token, return error
   if (!refreshToken) return res.status(401).json({ error: 'Access denied' });
 
-  jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH_KEY, (err, user) => {
+  // verify refresh token is valid
+  jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH_KEY, async (err, user) => {
     console.log(user);
     if (err) {
+      // token is not valid, return error
       return res.status(401).json({ error: 'Access denied' });
     }
 
     // Check en base que l'user est toujours existant (ou si on le voulait, on pourrait check qu'il est autorisé à refresh son token)
-    User.findOne({ email: user.email }).then(async (data) => {
-
-      // if user is not found or password doesn't match, return error 401
-      if(!data) {
-        return res.status(401).send('Error: Unauthorized');
-      }
-
-      const { firstName, lastName, gender } = data;
-      
-      delete user.iat;
-      delete user.exp;
-      const refreshedAccessToken = generateAccessToken({ email, firstName, lastName, gender });
-      
-      res.send({ accessToken: refreshedAccessToken });
+    const foundUser = await User.findOne({ email: user.email });
+    
+    // if user is not found or password doesn't match, return error 401
+    if(!foundUser) {
+      return res.status(401).send('Error: Unauthorized');
+    }
+    console.log('foundUser', foundUser.firstName);
+    const { firstName, lastName, gender } = foundUser;
+    // remove issued at and expiration
+    delete user.iat;
+    delete user.exp;
+    // generate new access token and update user in db
+    const refreshedAccessToken = generateAccessToken({ email: user.email, firstName, lastName, gender });
+    foundUser.accessToken = refreshedAccessToken;
+    const result = await foundUser.save();
+    // send response with 
+    res.send({ accessToken: refreshedAccessToken });
+    
   
-    });
   });
 
 });
