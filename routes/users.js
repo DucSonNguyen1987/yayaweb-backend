@@ -13,20 +13,23 @@ const users = [
   // Liste des utilisateurs avec mots de passe hachés
 ];
 
-function generateAccessToken(userId) {
-  return jwt.sign(userId, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRATION_TIME });
+function generateAccessToken(userData) {
+  return jwt.sign(userData, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRATION_TIME });
 }
 
+function generateRefreshToken(userData) {
+  return jwt.sign(userData, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '1y' });
+}
 
 /* POST users signup */
 router.post('/signup', function(req, res, next) {
   // check if parameter is missing
-  if (!checkBody(req.body, ['email', 'password'])) {
+  if (!checkBody(req.body, ['email', 'password', 'firstName', 'lastName', 'gender'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
 
-  const { email, password } = req.body;
+  const { email, password, firstName, lastName, gender } = req.body;
 
 
   // Check if the user has not already been registered
@@ -34,19 +37,29 @@ router.post('/signup', function(req, res, next) {
     if (data === null) {
       // create hash for new user
       const hash = bcrypt.hashSync(password, 10);
-
-      const token = generateAccessToken({ email });
+      const userData = {
+        email,
+        firstName,
+        lastName,
+        gender,
+      };
+      const accesToken = generateAccessToken(userData);
+      const refreshToken = generateRefreshToken({ email });
 
       // create new user doc
       const newUser = new User({
         email,
         password: hash,
-        token
+        firstName,
+        lastName,
+        gender,
+        accesToken,
+        refreshToken
       });
 
       // save new user in db
       newUser.save().then(newDoc => {
-        res.json({ result: true, token: newDoc.token });
+        res.json({ result: true, data: { email, firstName, lastName, gender, accesToken, refreshToken } });
       });
     } else {
       // User already exists in database
@@ -72,14 +85,50 @@ router.post('/login', async (req, res) => {
     if(!data || !(await bcrypt.compare(password, data.password))) {
       return res.status(401).send('Error: Unauthorized');
     }
+    const { firstName, lastName, gender } = data;
+    const accessToken = generateAccessToken({ email, firstName, lastName, gender });
+    const refreshToken = generateRefreshToken({ email });
 
-    const token = generateAccessToken({ email: data.email });
 
-    res.json({ result: true, token });
+    res.json({ result: true, data: { email, firstName, lastName, gender, accesToken, refreshToken } });
 
   });
 });
 
+// POST users refreshToken : re-générer l'accessToken à partir du refreshToken
+router.post('/refreshToken', async (req, res) => {
+
+  const authHeader = req.headers.authorization;
+  const refreshToken = authHeader && authHeader.split(' ')[1];
+
+  if (!refreshToken) return res.status(401).json({ error: 'Access denied' });
+
+  jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH_KEY, (err, user) => {
+    console.log(user);
+    if (err) {
+      return res.status(401).json({ error: 'Access denied' });
+    }
+
+    // Check en base que l'user est toujours existant (ou si on le voulait, on pourrait check qu'il est autorisé à refresh son token)
+    User.findOne({ email: user.email }).then(async (data) => {
+
+      // if user is not found or password doesn't match, return error 401
+      if(!data) {
+        return res.status(401).send('Error: Unauthorized');
+      }
+
+      const { firstName, lastName, gender } = data;
+      
+      delete user.iat;
+      delete user.exp;
+      const refreshedAccessToken = generateAccessToken({ email, firstName, lastName, gender });
+      
+      res.send({ accessToken: refreshedAccessToken });
+  
+    });
+  });
+
+});
 
 /* GET users protected route (test) */
 router.get('/account', authenticateToken, (req, res) => {
