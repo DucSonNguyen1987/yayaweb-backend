@@ -96,6 +96,27 @@ router.post('/login', async (req, res) => {
 
 });
 
+/* PUT users logout */
+router.put('/logout', authenticateToken, async (req, res) => {
+
+  const { email, firstName, lastName, gender } = req.user;
+
+  const foundUser = await User.findOne({ email: req.user.email });
+
+  if(!foundUser) {
+    return res.status(401).send('Error: User not found');
+  }
+
+  const accessToken = jwt.sign({ email: req.user.email }, process.env.JWT_SECRET_KEY, { expiresIn: 1 });
+  const refreshToken = jwt.sign({ email: req.user.email }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: 1 });
+  foundUser.accessToken = accessToken;
+  foundUser.refreshToken = refreshToken;
+  const result = await foundUser.save();
+
+  res.json({ result: true, data: 'You have been logged out'});
+
+});
+
 // POST users refreshToken : re-générer l'accessToken à partir du refreshToken
 router.post('/refreshToken', async (req, res) => {
 
@@ -122,12 +143,19 @@ router.post('/refreshToken', async (req, res) => {
       return res.status(401).send('Error: Unauthorized');
     }
     console.log('foundUser', foundUser.firstName);
+    console.log('foundUser refreshToken', foundUser.refreshToken);
+    
+    // check if there has been a new refresh token issued after this one (refresh or logout)
+    const decoded = jwt.verify(foundUser.refreshToken, process.env.JWT_SECRET_REFRESH_KEY);
+    console.log('decoded', decoded);
+
     const { firstName, lastName, gender } = foundUser;
     // remove issued at and expiration
     delete user.iat;
     delete user.exp;
     // generate new access token and update user in db
     const refreshedAccessToken = generateAccessToken({ email: user.email, firstName, lastName, gender });
+    console.log(refreshedAccessToken);
     foundUser.accessToken = refreshedAccessToken;
     const result = await foundUser.save();
     // send response with 
