@@ -107,7 +107,7 @@ router.put('/logout', authenticateToken, async (req, res) => {
     return res.status(401).send('Error: User not found');
   }
 
-  const accessToken = jwt.sign({ email: req.user.email }, process.env.JWT_SECRET_KEY, { expiresIn: 1 });
+  const accessToken = jwt.sign({ email, firstName, lastName, gender }, process.env.JWT_SECRET_KEY, { expiresIn: 1 });
   const refreshToken = jwt.sign({ email: req.user.email }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: 1 });
   foundUser.accessToken = accessToken;
   foundUser.refreshToken = refreshToken;
@@ -146,8 +146,13 @@ router.post('/refreshToken', async (req, res) => {
     console.log('foundUser refreshToken', foundUser.refreshToken);
     
     // check if there has been a new refresh token issued after this one (refresh or logout)
-    const decoded = jwt.verify(foundUser.refreshToken, process.env.JWT_SECRET_REFRESH_KEY);
-    console.log('decoded', decoded);
+    const savedRefreshToken = jwt.decode(foundUser.refreshToken, process.env.JWT_SECRET_REFRESH_KEY);
+    console.log('savedRefreshToken decoded', savedRefreshToken);
+    if(savedRefreshToken.iat > user.iat) {
+      // refresh token in the request is older than the recorded refresh token (in db)
+      // there already has been a logout (or refresh?)
+      return res.status(401).json({ error: 'Access denied, wrong token' });
+    }
 
     const { firstName, lastName, gender } = foundUser;
     // remove issued at and expiration
