@@ -24,12 +24,12 @@ function generateRefreshToken(userData) {
 /* POST users signup */
 router.post('/signup', function(req, res, next) {
   // check if parameter is missing
-  if (!checkBody(req.body, ['email', 'password', 'firstName', 'lastName', 'gender', 'age'])) {
+  if (!checkBody(req.body, ['email', 'password', 'firstName', 'lastName', 'gender', 'age', 'address'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
 
-  const { email, password, firstName, lastName, gender, age } = req.body;
+  const { email, password, firstName, lastName, gender, age, address } = req.body;
 
 
   // Check if the user has not already been registered
@@ -43,6 +43,7 @@ router.post('/signup', function(req, res, next) {
         lastName,
         gender,
         age,
+        address,
       };
       const accessToken = generateAccessToken(userData);
       const refreshToken = generateRefreshToken({ email });
@@ -56,7 +57,7 @@ router.post('/signup', function(req, res, next) {
 
       // save new user in db
       newUser.save().then(newDoc => {
-        res.json({ result: true, data: { email, firstName, lastName, gender, age, accessToken, refreshToken } });
+        res.json({ result: true, data: { email, firstName, lastName, gender, age, accessToken, refreshToken, address } });
       });
     } else {
       // User already exists in database
@@ -86,14 +87,14 @@ router.post('/login', async (req, res) => {
   }
 
   // generate tokens and update user in db
-  const { firstName, lastName, gender } = foundUser;
+  const { firstName, lastName, gender, age, address } = foundUser;
   const accessToken = generateAccessToken({ email, firstName, lastName, gender });
   const refreshToken = generateRefreshToken({ email });
   foundUser.accessToken = accessToken;
   foundUser.refreshToken = refreshToken;
   const result = await foundUser.save();
   // send response with user data
-  res.json({ result: true, data: { email, firstName, lastName, gender, accessToken, refreshToken } });
+  res.json({ result: true, data: { email, firstName, lastName, gender, age , accessToken, refreshToken, address } });
 
 });
 
