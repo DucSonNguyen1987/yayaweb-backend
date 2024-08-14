@@ -17,9 +17,9 @@ const productSchema = mongoose.Schema({
     name: String,
     category: {
         type: String,
-        enum: ['Super Jus', 'Infusions','Super Shots','MYJUICE'], 
+        enum: ['Super Jus', 'Infusions', 'Super Shots', 'MYJUICE'], 
     },
-    volum: {
+    volume: {
         type: String,
         enum: ['20ml','250ml','1l'], 
     },
@@ -27,9 +27,9 @@ const productSchema = mongoose.Schema({
         type: String,
         enum: ['Verre','PET'], 
     },
-    descriptino: String,
+    description: String,
     price: Number,
-    ccomposition: [compositionSchema],
+    composition: [compositionSchema],
     images: [String],
     nutritionalInfo: [nutritionInfoSchema]
 });
