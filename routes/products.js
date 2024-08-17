@@ -9,7 +9,7 @@ const { checkBody } = require('../modules/checkBody');
 
 /* GET product info */
 router.get('/product-info/:slug', function(req, res, next) {
-  
+
   // retrieve product from db
   Product.findOne({ productId: req.params.slug }).then(data => {
     if (data === null) {
@@ -30,13 +30,19 @@ router.post('/product-add/', function(req, res, next) {
     return;
   }
 
-  const { productId, name, category, description, price, images } = req.body;
+  const { productId, name, category, description, price, images, composition } = req.body;
+  //format composition
+  composition.forEach((ingredientString, i) => {
+    console.log(ingredientString);
+    composition[i] = JSON.parse(ingredientString);
+  });
+  console.log(composition);
 
   // check if product with same id already exists
   Product.findOne({ id: req.params.slug }).then(data => {
     if (data === null) {
       // create new product doc
-      const productData = { productId, name, category, description, price, images };
+      const productData = { productId, name, category, description, price, images, composition };
       const newProduct = new Product(productData);
       
       // save new product in db
