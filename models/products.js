@@ -19,7 +19,7 @@ const productSchema = mongoose.Schema({
         type: String,
         enum: ['Super Jus', 'Infusions', 'Super Shots', 'MYJUICE'], 
     },
-    volumes: [String],
+    volumes: [Object],
     bottle: {
         type: String,
         enum: ['Verre','PET'], 
@@ -34,7 +34,7 @@ const productSchema = mongoose.Schema({
 // set volumes available depending on category
 productSchema.pre('save', function(next){
     if(this.category === 'Super Shots') this.volumes = ['20ml'];
-    else this.volumes = ['250ml','1l'];
+    else this.volumes = [{capacity: '250ml', price: 0},{capacity:'1l', price: 3}];
     next();
 });
 
