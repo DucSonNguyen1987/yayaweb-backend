@@ -17,21 +17,25 @@ const productSchema = mongoose.Schema({
     name: String,
     category: {
         type: String,
-        enum: ['Super Jus', 'Infusions','Super Shots','MYJUICE'], 
+        enum: ['Super Jus', 'Infusions', 'Super Shots', 'MYJUICE'], 
     },
-    volum: {
-        type: String,
-        enum: ['20ml','250ml','1l'], 
-    },
+    volumes: [Object],
     bottle: {
         type: String,
         enum: ['Verre','PET'], 
     },
-    descriptino: String,
+    description: String,
     price: Number,
     composition: [compositionSchema],
     images: [String],
     nutritionalInfo: [nutritionInfoSchema]
+});
+
+// set volumes available depending on category
+productSchema.pre('save', function(next){
+    if(this.category === 'Super Shots') this.volumes = ['20ml'];
+    else this.volumes = [{capacity: '250ml', price: 0},{capacity:'1l', price: 3}];
+    next();
 });
 
 const Product = mongoose.model("Product", productSchema);
