@@ -29,7 +29,7 @@ const productSchema = mongoose.Schema({
     },
     descriptino: String,
     price: Number,
-    ccomposition: [compositionSchema],
+    composition: [compositionSchema],
     images: [String],
     nutritionalInfo: [nutritionInfoSchema]
 });
