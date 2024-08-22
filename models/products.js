@@ -12,6 +12,12 @@ const nutritionInfoSchema = mongoose.Schema({
     suger: Number
 });
 
+const imageSchema = mongoose.Schema({
+    url: String,
+    description: String,
+    productOptions: Object,
+});
+
 const productSchema = mongoose.Schema({
     productId: String,
     name: String,
@@ -27,7 +33,7 @@ const productSchema = mongoose.Schema({
     description: String,
     price: Number,
     composition: [compositionSchema],
-    images: [String],
+    images: [imageSchema],
     nutritionalInfo: [nutritionInfoSchema]
 });
 
