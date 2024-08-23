@@ -4,8 +4,25 @@ const mongoose = require("mongoose");
 const productSchema = mongoose.Schema({
     productId: String,
     name: String,
+    options: Object,
     price: Number,
-    quantity: Number
+    quantity: Number,
+    category: {
+        type: String,
+        enum: ['Super Jus', 'Infusions', 'Super Shots', 'MYJUICE'], 
+    },
+    bottle: {
+        type: String,
+        enum: ['Verre','PET'], 
+    },
+    description: String,
+    image: String,
+    composition: [compositionSchema]
+});
+
+const compositionSchema = mongoose.Schema({
+    name: String,
+    percentage: Number
 });
 
 // Schéma pour la commande
@@ -14,18 +31,21 @@ const orderSchema = mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: {
         type: String,
-        enum: ['Shipped', 'Delivered', 'Cancelled'], 
+        enum: ['Pending payment', 'Paid', 'Processing', 'Completed', 'Shipped', 'Delivered', 'Canceled', 'Refunded'], 
     },
     products: [productSchema], 
-    delivryDate:Date,
+    deliveryDate: Date,
     totalAmount: Number,
-    shippingAddress: {
+    deliveryAddress: {
+        civility: String,
+        firstName: String,
+        lastName: String,
         streetNumber: String,
         streetName: String,
         city: String,
         zipCode: Number,
         billing: Boolean,
-        instruction:String
+        instructions: String
     },
     credit: Number
 });

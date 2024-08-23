@@ -12,6 +12,12 @@ const nutritionInfoSchema = mongoose.Schema({
     suger: Number
 });
 
+const imageSchema = mongoose.Schema({
+    url: String,
+    description: String,
+    productOptions: Object,
+});
+
 const productSchema = mongoose.Schema({
     productId: String,
     name: String,
@@ -27,14 +33,14 @@ const productSchema = mongoose.Schema({
     description: String,
     price: Number,
     composition: [compositionSchema],
-    images: [String],
+    images: [imageSchema],
     nutritionalInfo: [nutritionInfoSchema]
 });
 
 // set volumes available depending on category
 productSchema.pre('save', function(next){
-    if(this.category === 'Super Shots') this.volumes = ['20ml'];
-    else this.volumes = [{capacity: '250ml', price: 0},{capacity:'1l', price: 3}];
+    if(this.category === 'Super Shots') this.volumes = [{capacity: '20ml', price: 0}];
+    else this.volumes = [{capacity: '250ml', price: 0}, {capacity:'1l', price: 3}];
     next();
 });
 
