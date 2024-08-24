@@ -1,7 +1,13 @@
 const mongoose = require("mongoose");
 
+const compositionSchema = mongoose.Schema({
+    name: String,
+    percentage: Number
+});
+
 // Sous-schéma pour le produit dans une commande
 const productSchema = mongoose.Schema({
+    // product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
     productId: String,
     name: String,
     options: Object,
@@ -20,10 +26,11 @@ const productSchema = mongoose.Schema({
     composition: [compositionSchema]
 });
 
-const compositionSchema = mongoose.Schema({
-    name: String,
-    percentage: Number
+const itemSchema = mongoose.Schema({
+    product: productSchema,
+    quantity: Number,
 });
+
 
 // Schéma pour la commande
 const orderSchema = mongoose.Schema({
@@ -33,7 +40,7 @@ const orderSchema = mongoose.Schema({
         type: String,
         enum: ['Pending payment', 'Paid', 'Processing', 'Completed', 'Shipped', 'Delivered', 'Canceled', 'Refunded'], 
     },
-    products: [productSchema], 
+    items: [itemSchema], 
     deliveryDate: Date,
     totalAmount: Number,
     deliveryAddress: {
