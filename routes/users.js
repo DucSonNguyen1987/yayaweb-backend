@@ -122,9 +122,8 @@ router.put('/logout', authenticateToken, async (req, res) => {
 // POST users refreshToken : re-générer l'accessToken à partir du refreshToken
 router.post('/refreshToken', async (req, res) => {
 
-  // check for refresh token in header
-  const authHeader = req.headers.authorization;
-  const refreshToken = authHeader && authHeader.split(' ')[1];
+  // check for refresh token in request body
+  const refreshToken = req.body.refreshToken;
 
   // if no refresh token, return error
   if (!refreshToken) return res.status(401).json({ error: 'Access denied' });
@@ -177,5 +176,10 @@ router.post('/refreshToken', async (req, res) => {
 router.get('/account', authenticateToken, (req, res) => {
   res.json({ message: "Success", user: req.user });
 });
+
+
+
+
+
 
 module.exports = router;

@@ -36,7 +36,13 @@ router.post('/product-add/', function(req, res, next) {
     console.log(ingredientString);
     composition[i] = JSON.parse(ingredientString);
   });
-  console.log(composition);
+  //format images
+  images.forEach((imageObjString, i) => {
+    console.log(imageObjString);
+    images[i] = JSON.parse(imageObjString);
+  });
+
+  console.log('composition', composition, 'images', images);
 
   // check if product with same id already exists
   Product.findOne({ id: req.params.slug }).then(data => {
@@ -52,7 +58,7 @@ router.post('/product-add/', function(req, res, next) {
 
     } else {
       // product already exists
-      res.json({ result: false, error: 'Product not found' });
+      res.json({ result: false, error: 'Product already exists' });
     }
   });
 
