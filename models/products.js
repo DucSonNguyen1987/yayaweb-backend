@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
 const compositionSchema = mongoose.Schema({
-    name: String,
-    percentage: Number
+    ingredientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Ingredient' },
+    percentage: Number,
 });
 
 const nutritionInfoSchema = mongoose.Schema({
