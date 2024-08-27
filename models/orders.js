@@ -57,5 +57,5 @@ const orderSchema = mongoose.Schema({
     credit: Number
 });
 
-const Order = mongoose.model("Order", orderSchema);
+const Order = mongoose.model("orders", orderSchema);
 module.exports = Order;

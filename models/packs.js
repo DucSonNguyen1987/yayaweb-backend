@@ -28,5 +28,5 @@ const packSchema = mongoose.Schema({
     images: [String]
 });
 
-const Pack = mongoose.model("Pack", packSchema);
+const Pack = mongoose.model("packs", packSchema);
 module.exports = Pack;

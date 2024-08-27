@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const compositionSchema = mongoose.Schema({
+    ingredient: { type: mongoose.Schema.Types.ObjectId, ref: 'Ingredient' },
     name: String,
     percentage: Number
 });
@@ -44,5 +45,5 @@ productSchema.pre('save', function(next){
     next();
 });
 
-const Product = mongoose.model("Product", productSchema);
+const Product = mongoose.model("products", productSchema);
 module.exports = Product;

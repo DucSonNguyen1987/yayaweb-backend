@@ -3,6 +3,7 @@ var router = express.Router();
 
 require('../models/connection');
 const Product = require('../models/products');
+const Ingredient = require('../models/ingredients');
 const { checkBody } = require('../modules/checkBody');
 // const authenticateToken = require('../middleware/authMiddleware');
 
@@ -32,7 +33,16 @@ router.get('/categories', async (req, res) => {
 router.get('/product-info/:slug', function(req, res, next) {
 
   // retrieve product from db
-  Product.findOne({ productId: req.params.slug }).then(data => {
+  Product.findOne({ productId: req.params.slug })
+  .populate('composition')
+  .populate({
+    path: 'composition',
+    populate: {
+      path:  'ingredient',
+      model: 'ingredients'
+    }
+  })
+  .then(data => {
     if (data === null) {
       res.json({ result: false, error: 'Product not found' });
     } else {
