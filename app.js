@@ -8,6 +8,7 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const productsRouter = require('./routes/products');
 
+
 const app = express();
 const cors =require('cors');
 app.use(cors());
