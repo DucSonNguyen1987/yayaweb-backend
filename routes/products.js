@@ -29,6 +29,7 @@ router.get('/categories', async (req, res) => {
 });
 
 
+
 /* GET product info */
 router.get('/product-info/:slug', function(req, res, next) {
 
