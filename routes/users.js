@@ -3,6 +3,7 @@ var router = express.Router();
 
 require('../models/connection');
 const User = require('../models/users');
+const Order = require('../models/orders');
 const { checkBody } = require('../modules/checkBody');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -175,6 +176,26 @@ router.post('/refreshToken', async (req, res) => {
 /* GET users protected route (test) */
 router.get('/account', authenticateToken, (req, res) => {
   res.json({ message: "Success", user: req.user });
+});
+
+/* GET users protected route (test) */
+router.get('/orders', authenticateToken, (req, res) => {
+
+  const orders = Order.aggregate([
+    { $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user"
+    } },
+    {
+      $match: { "user.email": req.user.email }
+    }
+  ])
+  .then(data => {
+    console.log(data);
+    res.json({result: true, orders: data});
+  });
 });
 
 
