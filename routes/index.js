@@ -27,7 +27,7 @@ router.post('/order-confirm', authenticateToken, async (req, res) => {
 
   console.log('/order-confirm req.body', req.body);
   // check if parameter is missing
-  if (!checkBody(req.body.data, ['items', 'deliveryDate', 'deliveryAddress', 'totalAmount'])) {
+  if (!checkBody(req.body.data, ['items', 'deliveryDate', 'deliveryAddress', 'total'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
@@ -52,8 +52,9 @@ router.post('/order-confirm', authenticateToken, async (req, res) => {
   orderDateTime = YYYY + MM + DD + hh + mm + ss;
   const orderId = orderDateTime+'-'+foundUser.lastName.charAt(0)+foundUser.firstName.charAt(0)+makeid(4);
   // console.log(orderId);
+  const orderDate = today;
 
-  const { items, deliveryDate, deliveryAddress, totalAmount } = req.body.data;
+  const { items, deliveryDate, deliveryAddress, total } = req.body.data;
   console.log('items', items);
   items.forEach((item, i) => {
     // clean/modify product object to save in orders collection
@@ -81,9 +82,10 @@ router.post('/order-confirm', authenticateToken, async (req, res) => {
     userId: foundUser._id,
     status: 'Pending payment',
     items,
+    orderDate,
     deliveryDate,
     deliveryAddress,
-    totalAmount,
+    total,
   };
   
   console.log('orderData', orderData);
