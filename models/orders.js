@@ -41,8 +41,9 @@ const orderSchema = mongoose.Schema({
         enum: ['Pending payment', 'Paid', 'Processing', 'Completed', 'Shipped', 'Delivered', 'Canceled', 'Refunded'], 
     },
     items: [itemSchema], 
+    orderDate: Date,
     deliveryDate: Date,
-    totalAmount: Number,
+    total: Number,
     deliveryAddress: {
         civility: String,
         firstName: String,
