@@ -40,8 +40,8 @@ const productSchema = mongoose.Schema({
 
 // set volumes available depending on category
 productSchema.pre('save', function(next){
-    if(this.category === 'Super Shots') this.volumes = [{capacity: '20ml', price: 0}];
-    else this.volumes = [{capacity: '250ml', price: 0}, {capacity:'1l', price: 3}];
+    if(this.category === 'Super Shots') this.volumes = [{capacity: '60ml', priceMultipier: 1}];
+    else this.volumes = [{capacity: '250ml', priceMultipier: 1}, {capacity:'1l', priceMultipier: 3}];
     next();
 });
 

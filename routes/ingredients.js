@@ -43,11 +43,11 @@ router.post('/ingredient-add/', function(req, res){
     const  {name, dosage, color, price, benefits }= req.body;
 
     //Check if Ingredient with same id already exists
-    Ingredient.findOne({id: req.params.slug}).then(data=>{
+    Ingredient.findOne({id: req.params.name}).then(data=>{
         if (data ===null) {
             // creat a new ingredient doc
             const ingredientData = {name, dosage, color, price, benefits }
-            const newIngredient = new Ingredient(IngredientData);
+            const newIngredient = new Ingredient(ingredientData);
 
             // save new Ingredeient in DB
             newIngredient.save().then( newDoc =>{
