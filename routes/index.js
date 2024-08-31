@@ -4,6 +4,7 @@ const authenticateToken = require('../middleware/authMiddleware');
 const User = require('../models/users');
 const Order = require('../models/orders');
 const { checkBody } = require('../modules/checkBody');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 function makeid(length) {
   let result = '';
@@ -97,6 +98,48 @@ router.post('/order-confirm', authenticateToken, async (req, res) => {
     res.json({ result: true, data: newDoc });
   });
 
+
+});
+
+router.post('/create-checkout-session', authenticateToken, async (req, res) => {
+  console.log('/create-checkout-session, req.body', req.body);
+  // check if parameter is missing
+  if (!checkBody(req.body, ['items', 'deliveryDate', 'deliveryAddress', 'total'])) {
+  res.json({ result: false, error: 'Missing or empty fields' });
+    return;
+  }
+
+  const { items, total, deliveryAddress } = req.body;
+
+  // loop items to create line_items product data
+  const line_items = items.map((item, i) => {
+      return {
+          price_data: {
+            currency: 'eur',
+            unit_amount: (item.product.price * item.product.options.volume.priceMultiplier) * 100,
+            product_data: {
+              name: item.product.name,
+              images: [
+                  // TODO : ajouter url complète de l'image, après avoir déployé le frontend
+                  // item.images[0].url
+              ],
+            },
+          },
+          // description: item.product.description,
+          quantity: item.quantity,
+      }
+  });
+
+  console.log('line_items', line_items);
+
+  const session = await stripe.checkout.sessions.create({
+    line_items,
+    mode: 'payment',
+    success_url: `${process.env.FRONTEND_URL}/commander?success=true`,
+    cancel_url: `${process.env.FRONTEND_URL}/commander?canceled=true`,
+  });
+
+  res.json({result: true, data: session});
 
 });
 
