@@ -4,7 +4,7 @@ const authenticateToken = require('../middleware/authMiddleware');
 const User = require('../models/users');
 const Order = require('../models/orders');
 const { checkBody } = require('../modules/checkBody');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(`${process.env.STRIPE_SECRET_KEY}`);
 
 function makeid(length) {
   let result = '';
