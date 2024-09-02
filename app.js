@@ -8,6 +8,7 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const productsRouter = require('./routes/products');
 const ingredientRouter = require('./routes/ingredients');
+const sendmailRouter = require('./routes/sendmail');
 
 
 const app = express();
@@ -24,5 +25,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/products', productsRouter);
 app.use('/ingredients', ingredientRouter);
+app.use('/sendmail', sendmailRouter);
 
 module.exports = app;
