@@ -104,12 +104,12 @@ router.post('/order-confirm', authenticateToken, async (req, res) => {
 router.post('/create-checkout-session', authenticateToken, async (req, res) => {
   console.log('/create-checkout-session, req.body', req.body);
   // check if parameter is missing
-  if (!checkBody(req.body, ['items', 'deliveryDate', 'deliveryAddress', 'total'])) {
+  if (!checkBody(req.body, ['orderId', 'customer_email', 'items', 'deliveryDate', 'deliveryAddress', 'total'])) {
   res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
 
-  const { items, total, deliveryAddress } = req.body;
+  const { orderId, customer_email, items, total, deliveryAddress } = req.body;
 
   // loop items to create line_items product data
   const line_items = items.map((item, i) => {
@@ -133,13 +133,41 @@ router.post('/create-checkout-session', authenticateToken, async (req, res) => {
   console.log('line_items', line_items);
 
   const session = await stripe.checkout.sessions.create({
+    customer_email,
     line_items,
     mode: 'payment',
-    success_url: `${process.env.FRONTEND_URL}/commander?success=true`,
+    success_url: `${process.env.FRONTEND_URL}/merci?success=true&orderId=${orderId}`,
     cancel_url: `${process.env.FRONTEND_URL}/commander?canceled=true`,
   });
 
   res.json({result: true, data: session});
+
+});
+
+
+router.post('/order-success', authenticateToken, async (req, res) => {
+
+  console.log('/order-success req.body', req.body);
+  // check if parameter is missing
+  if (!checkBody(req.body, ['orderId'])) {
+    res.json({ result: false, error: 'Missing or empty fields' });
+    return;
+  }
+
+  const { orderId } = req.body;
+
+  // update order status to 'Paid'
+  Order.findOneAndUpdate({ orderId }, { status: 'Paid' })
+  .then(data => {
+    if(data) {
+      // order successfully updated
+      res.json({result: true, data });
+    } else {
+      res.json({ result: false, error: 'Order not found', data });
+    }
+  });
+
+
 
 });
 

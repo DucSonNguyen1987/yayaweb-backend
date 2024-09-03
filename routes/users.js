@@ -190,7 +190,8 @@ router.get('/orders', authenticateToken, (req, res) => {
     } },
     {
       $match: { "user.email": req.user.email }
-    }
+    },
+    { $sort: { orderDate: -1 } }
   ])
   .then(data => {
     console.log(data);
