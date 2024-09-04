@@ -97,6 +97,86 @@ router.post('/product-add/', function(req, res, next) {
 });
 
 
+router.post('/product-add-image/', function(req, res, next) {
+  
+  if (!checkBody(req.body, ['productId', 'url'])) {
+    res.json({ result: false, error: 'Missing or empty fields' });
+    return;
+  }
+
+  const { productId, url, description = null, productOptions = null } = req.body;
+
+  console.log('productId', productId, 'url', url, 'description', description, 'productOptions', productOptions);
+
+  // create images data object
+  const imagesData = { url };
+  
+  // add description if it exists
+  if(description) imagesData.description = description;
+
+  //parse product options
+  if(productOptions) {
+    productOptionsObj = JSON.parse(productOptions);
+    imagesData.productOptions = productOptionsObj;
+  }
+
+  console.log('imagesData', imagesData);
+
+  // check if product with same id already exists
+  Product.findOneAndUpdate({ productId }, { images: [imagesData] }).then(data => {
+    if (data) {
+      // product updated
+      res.json({ result: true, data });
+    } else {
+      // product not found
+      res.json({ result: false, error: 'Product not found' });
+    }
+  });
+
+});
+
+
+router.post('/product-add-images/', function(req, res, next) {
+  
+  if (!checkBody(req.body, ['productId', 'images'])) {
+    res.json({ result: false, error: 'Missing or empty fields' });
+    return;
+  }
+
+  const { productId, images, replace = false } = req.body;
+
+  console.log('productId', productId, 'images', images, 'replace', replace);
+
+  // create images data object
+  const imagesData = JSON.parse(images);
+  
+  // add description if it exists
+  // if(description) imagesData.description = description;
+
+  //parse product options
+  // if(productOptions) {
+  //   productOptionsObj = JSON.parse(productOptions);
+  //   imagesData.productOptions = productOptionsObj;
+  // }
+  imagesData.forEach((image, i) => {
+    console.log(image);
+    if(image.productOptions) imagesData[i].productOptions = JSON.parse(image.productOptions);
+  });
+
+  console.log('imagesData', imagesData);
+  const updateImages = replace ? { images: imagesData } : { $push: { images: imagesData } }
+  // find product and update images
+  Product.findOneAndUpdate({ productId }, updateImages).then(data => {
+    if (data) {
+      // product updated
+      res.json({ result: true, data });
+    } else {
+      // product not found
+      res.json({ result: false, error: 'Product not found' });
+    }
+  });
+
+});
 
 
 module.exports = router;
