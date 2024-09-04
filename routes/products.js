@@ -150,14 +150,6 @@ router.post('/product-add-images/', function(req, res, next) {
   // create images data object
   const imagesData = JSON.parse(images);
   
-  // add description if it exists
-  // if(description) imagesData.description = description;
-
-  //parse product options
-  // if(productOptions) {
-  //   productOptionsObj = JSON.parse(productOptions);
-  //   imagesData.productOptions = productOptionsObj;
-  // }
   imagesData.forEach((image, i) => {
     console.log(image);
     if(image.productOptions) imagesData[i].productOptions = JSON.parse(image.productOptions);
