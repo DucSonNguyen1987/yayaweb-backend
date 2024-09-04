@@ -7,6 +7,7 @@ const router = express.Router();
 const user = process.env.EMAIL_USERNAME;
 const pass = process.env.EMAIL_PASSWORD;
 
+console.log('Using:', process.env.EMAIL_USERNAME, process.env.EMAIL_PASSWORD);
 
 const transporter = nodemailer.createTransport({
     service: 'gmail', 
@@ -16,6 +17,7 @@ const transporter = nodemailer.createTransport({
 
 router.post('/', async (req, res) => {
     const { name, firstName, email, message } = req.body;
+   console.log( `You have a new message from ${name} ${firstName} (${email}): ${message}`)
     const mailOptions = {
         from: email,
         to: user,
