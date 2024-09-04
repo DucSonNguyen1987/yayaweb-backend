@@ -160,6 +160,9 @@ router.post('/order-success', authenticateToken, async (req, res) => {
   Order.findOneAndUpdate({ orderId }, { status: 'Paid' })
   .then(data => {
     if(data) {
+      // => paramétrer l'envoi d'un mail de confirmation de commande
+
+
       // order successfully updated
       res.json({result: true, data });
     } else {
