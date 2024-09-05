@@ -43,6 +43,7 @@ const orderSchema = mongoose.Schema({
     items: [itemSchema], 
     orderDate: Date,
     deliveryDate: Date,
+    deliveryTime: String,
     total: Number,
     deliveryAddress: {
         civility: String,
