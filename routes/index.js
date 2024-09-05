@@ -67,8 +67,16 @@ router.post('/order-confirm', authenticateToken, async (req, res) => {
     delete item.product.nutritionalInfo;
     // keep only 1 image (the first for now)
     // TODO keep only the image of the chosen volume option if applicable
-    // item.product.image = item.product.images[0].url;
-    // delete item.product.images;
+    if(item.product.images && item.product.images.length > 0) {
+      if(item.product.options.volume && item.product.options.volume.capacity) {
+        const foundImageIndex = item.product.images.findIndex(image => image !== '' && (image.productOptions && image.productOptions.volume && item.product.options.volume.capacity === image.productOptions.volume.capacity));
+        if(foundImageIndex !== -1) item.product.image = item.product.images[foundImageIndex].url;
+        else item.product.image = item.product.images[0].url;
+      } else {
+       item.product.image = item.product.images[0].url;
+      }
+    }
+    delete item.product.images;
   });
   console.log('items 2', items);
     
