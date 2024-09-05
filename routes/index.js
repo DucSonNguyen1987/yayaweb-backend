@@ -132,6 +132,8 @@ router.post('/create-checkout-session', authenticateToken, async (req, res) => {
   });
 
   console.log('line_items', line_items);
+  console.log('success_url', `${process.env.FRONTEND_URL}/merci?success=true&orderId=${orderId}`);
+  console.log('cancel_url', `${process.env.FRONTEND_URL}/commander?canceled=true`);
 
   const session = await stripe.checkout.sessions.create({
     customer_email,
